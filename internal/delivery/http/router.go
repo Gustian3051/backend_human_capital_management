@@ -6,12 +6,17 @@ import (
 	"backend/internal/delivery/http/middleware"
 
 	"github.com/gin-gonic/gin"
+	"github.com/casbin/casbin/v2"
+
+	jwtinfra "backend/internal/infrastructure/security/jwt"
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func NewRouter(cfg *config.Config) *gin.Engine {
+func NewRouter(cfg *config.Config, enforcer *casbin.Enforcer, db *gorm.DB, redisClient *redis.Client, jwtService *jwtinfra.Service) *gin.Engine {
 	r := gin.Default()
 
 	// Middleware
@@ -26,10 +31,15 @@ func NewRouter(cfg *config.Config) *gin.Engine {
 	}
 
 	// API versioning
-	// api := r.Group("/api/v1")
-	// {
-	
+	api := r.Group("/api/v1")
+	api.Use(
+		middleware.JWTMiddleware(jwtService, redisClient),
+		middleware.CheckProfileMiddleware(db, redisClient),
+		middleware.RBACMiddleware(enforcer),
+	)
+
 	// endpoint
+	// {
 	// api.GET("/users/:id", userHandler.GetUser)
 	// }
 

@@ -6,10 +6,12 @@ import (
 
 	"backend/config"
 	"backend/internal/delivery/http"
+	"backend/internal/infrastructure/authorization"
 	"backend/internal/infrastructure/database"
 	firebaseinfra "backend/internal/infrastructure/firebase"
 	redisinfra "backend/internal/infrastructure/redis"
 	storageinfra "backend/internal/infrastructure/storage"
+	jwtinfra "backend/internal/infrastructure/security/jwt"
 	"backend/pkg/log"
 
 	"go.uber.org/zap"
@@ -53,8 +55,13 @@ func main() {
 		zap.Bool("firebase", firebaseApp != nil),
 	)
 
+	// ===== Authorization =====
+	enforcer := authorization.InitCasbin(db)
+
+	jwtService := jwtinfra.NewJWTService(cfg.JWT.Secret)
+
 	// ===== Router =====
-	router := http.NewRouter(cfg)
+	router := http.NewRouter(cfg, enforcer, db, rdb, jwtService)
 
 	// ===== Run Server =====
 	addr := ":" + cfg.App.Port
