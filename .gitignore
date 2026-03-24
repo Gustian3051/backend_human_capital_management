@@ -26,6 +26,13 @@ go.work.sum
 
 # env file
 .env
+.env.docker
+
+# docs
+docs/
+
+# service account key
+serviceAccountKey.json
 
 # Editor/IDE
 # .idea/
