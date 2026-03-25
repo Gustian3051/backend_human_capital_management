@@ -10,8 +10,8 @@ import (
 	"backend/internal/infrastructure/database"
 	firebaseinfra "backend/internal/infrastructure/firebase"
 	redisinfra "backend/internal/infrastructure/redis"
-	storageinfra "backend/internal/infrastructure/storage"
 	jwtinfra "backend/internal/infrastructure/security/jwt"
+	storageinfra "backend/internal/infrastructure/storage"
 	"backend/pkg/log"
 
 	"go.uber.org/zap"
@@ -54,6 +54,19 @@ func main() {
 		zap.Bool("storage", minioClient != nil),
 		zap.Bool("firebase", firebaseApp != nil),
 	)
+
+	// ===== Migration =====
+	mode := cfg.MigrationMode
+
+	if mode == "reset" {
+		if err := database.ResetMigrate(db); err != nil {
+			logger.Log.Fatal("Failed to migrate database", zap.Error(err))
+		}
+	} else {
+		if err := database.AutoMigrate(db); err != nil {
+			logger.Log.Fatal("Failed to migrate database", zap.Error(err))
+		}
+	}
 
 	// ===== Authorization =====
 	enforcer := authorization.InitCasbin(db)
