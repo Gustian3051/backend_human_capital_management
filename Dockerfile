@@ -18,6 +18,7 @@ WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/.env.docker .
 COPY --from=builder /app/serviceAccountKey.json .
+COPY --from=builder /app/config ./config
 
 EXPOSE 8080
 
