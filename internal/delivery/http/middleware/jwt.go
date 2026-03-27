@@ -17,83 +17,84 @@ import (
 func JWTMiddleware(jwtService *jwtinfra.Service, redisClient *redis.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		// ===== Get Authorization Header =====
+		// ===== 1. Get Authorization Header =====
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			logger.Log.Warn("Missing authorization header")
-
-			c.JSON(http.StatusUnauthorized, gin.H{
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "missing authorization header",
 			})
-			c.Abort()
 			return
 		}
 
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		if tokenString == "" {
-			logger.Log.Warn("Invalid authorization header")
-
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "invalid authorization header",
+		parts := strings.Split(authHeader, " ")
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid authorization header format",
 			})
-			c.Abort()
 			return
 		}
 
-		// ===== Validate JWT =====
+		tokenString := parts[1]
+
 		claims, err := jwtService.ValidateToken(tokenString)
 		if err != nil {
-			logger.Log.Warn("Invalid token",
-				zap.Error(err),
-			)
+			logger.Log.Warn("Invalid token", zap.Error(err))
 
-			c.JSON(http.StatusUnauthorized, gin.H{
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "invalid token",
 			})
-			c.Abort()
 			return
 		}
 
-		// ===== Check Token Blacklist (Redis) =====
 		if redisClient != nil {
 			ctx := context.Background()
 
 			key := "blacklist:" + claims.ID
 			exists, err := redisClient.Exists(ctx, key).Result()
 			if err != nil {
-				logger.Log.Error("Failed to check token blacklist",
-					zap.Error(err),
-				)
-
-				c.JSON(http.StatusInternalServerError, gin.H{
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 					"error": "internal server error",
 				})
-				c.Abort()
 				return
 			}
 
 			if exists > 0 {
-				logger.Log.Warn("Token has been revoked",
-					zap.String("jti", claims.ID),
-				)
-
-				c.JSON(http.StatusUnauthorized, gin.H{
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 					"error": "token revoked",
 				})
-				c.Abort()
 				return
 			}
 		}
 
-		// ===== Inject Context =====
+		path := c.FullPath()
+
+		if claims.Role == "pre-register" {
+			if path != "/api/v1/register" {
+				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+					"error": "access denied: complete profile required",
+				})
+				return
+			}
+		}
+
+		if claims.Role != "pre-register" && path == "/api/v1/register" {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"error": "register not allowed",
+			})
+			return
+		}
+
 		c.Set("user_id", claims.UserID)
 		c.Set("employee_id", claims.EmployeeID)
 		c.Set("company_id", claims.CompanyID)
-		c.Set("role_id", claims.RoleID)
+		c.Set("role_key", claims.RoleKey)
 		c.Set("role", claims.Role)
 		c.Set("permissions", claims.Permissions)
 		c.Set("jti", claims.ID)
 		c.Set("access_token", tokenString)
+
+		ctx := context.WithValue(c.Request.Context(), "claims", claims)
+		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()
 	}

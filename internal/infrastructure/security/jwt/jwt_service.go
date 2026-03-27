@@ -10,6 +10,13 @@ import (
 	"go.uber.org/zap"
 )
 
+type JWTServiceInterface interface {
+	GenerateTempToken(userID string) (string, error)
+	GenerateToken(claims CustomClaims, duration time.Duration) (string, error)
+	ValidateToken(tokenStr string) (*CustomClaims, error)
+	GenerateResetToken(userID, email string) (string, error)
+}
+
 type Service struct {
 	secret []byte
 }
@@ -18,6 +25,15 @@ func NewJWTService(secret string) *Service {
 	return &Service{
 		secret: []byte(secret),
 	}
+}
+
+func (s *Service) GenerateTempToken(userID string) (string, error) {
+	claims := CustomClaims{
+		UserID: userID,
+		Role:   "pre-register",
+	}
+
+	return s.GenerateToken(claims, 10*time.Minute)
 }
 
 func (s *Service) GenerateToken(claims CustomClaims, duration time.Duration) (string, error) {
