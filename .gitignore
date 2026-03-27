@@ -28,6 +28,9 @@ go.work.sum
 .env
 .env.docker
 
+# html
+app.html
+
 # docs
 docs/
 
