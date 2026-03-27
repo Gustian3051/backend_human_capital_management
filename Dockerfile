@@ -19,6 +19,7 @@ COPY --from=builder /app/main .
 COPY --from=builder /app/.env.docker .
 COPY --from=builder /app/serviceAccountKey.json .
 COPY --from=builder /app/config ./config
+COPY --from=builder /app/internal/template ./internal/template
 
 EXPOSE 8080
 

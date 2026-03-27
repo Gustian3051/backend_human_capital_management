@@ -17,7 +17,7 @@ type Config struct {
 	SMTP     SMTPConfig
 	Firebase FirebaseConfig
 	JWT      JWTConfig
-	MigrationMode string
+	Auth     AuthConfig
 }
 
 var cfg *Config
@@ -50,7 +50,7 @@ func LoadConfig() *Config {
 		SMTP:     LoadSMTPConfig(),
 		Firebase: LoadFirebaseConfig(),
 		JWT:      LoadJWTConfig(),
-		MigrationMode: viper.GetString("MIGRATION_MODE"),
+		Auth:     LoadAuthConfig(),
 	}
 
 	logger.Log.Info("Configuration initialized",

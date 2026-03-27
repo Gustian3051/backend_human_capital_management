@@ -6,7 +6,7 @@ import (
 	"backend/internal/domain/company"
 	"backend/internal/domain/department"
 	"backend/internal/domain/employee"
-	"backend/internal/domain/package"
+	"backend/internal/domain/subscription"
 	"backend/internal/domain/position"
 	"backend/internal/domain/role_permission"
 	"backend/internal/domain/shift"
@@ -21,13 +21,13 @@ import (
 // daftar semua model
 func getModels() []interface{} {
 	return []interface{}{
-		// package
-		&pkg.PackageModel{},
-		&pkg.PackageHistoryModel{},
-		
 		// company
 		&company.CompanyModel{},
 
+		// package
+		&subscription.SubscriptionModel{},
+		&subscription.SubscriptionHistoryModel{},
+		
 		// department
 		&department.DepartmentModel{},
 
@@ -71,14 +71,26 @@ func getModels() []interface{} {
 func AutoMigrate(db *gorm.DB) error {
 	logger.Log.Info("Running auto migration (safe mode)...")
 
-	return db.AutoMigrate(getModels()...)
+	if err := db.AutoMigrate(getModels()...); err != nil {
+		return err
+	}
+
+	if err := SeedSubscription(db); err != nil {
+		return err
+	}
+
+	if err := SeedDefaultPermissions(db); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // =============================
-// FORCE RESET MIGRATE 🔥
+// FORCE RESET MIGRATE
 // =============================
 func ResetMigrate(db *gorm.DB) error {
-	logger.Log.Warn("⚠️ RESET MIGRATION: dropping all tables...")
+	logger.Log.Warn("RESET MIGRATION: dropping all tables...")
 
 	err := db.Migrator().DropTable(getModels()...)
 	if err != nil {
