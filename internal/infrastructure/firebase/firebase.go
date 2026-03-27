@@ -8,7 +8,7 @@ import (
 	"backend/config"
 	"backend/pkg/log"
 
-	firebase "firebase.google.com/go"
+	firebase "firebase.google.com/go/v4"
 	"google.golang.org/api/option"
 	"go.uber.org/zap"
 )
