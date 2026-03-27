@@ -2,8 +2,7 @@ package role_permission
 
 import (
 	"backend/internal/domain/common"
-	"backend/internal/domain/employee"
-
+	
 	"github.com/google/uuid"
 )
 
@@ -14,6 +13,6 @@ type RoleModel struct {
 	Name        string `gorm:"type:varchar(255);not null" json:"name"`
 	Description string `gorm:"type:text" json:"description"`
 
+	Permissions []PermissionModel `gorm:"many2many:role_permissions;association_jointable_foreignkey:permission_id;jointable_foreignkey:role_id" json:"permissions"`
 	common.BaseModel
-	employee.EmployeeModel
 }
