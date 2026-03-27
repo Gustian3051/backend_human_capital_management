@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+      .container {
+        max-width: 480px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        padding: 32px;
+        text-align: center;
+      }
+      h2 {
+        color: #2563eb;
+        margin-bottom: 20px;
+      }
+      .otp-box {
+        font-size: 28px;
+        letter-spacing: 8px;
+        font-weight: bold;
+        color: #1e40af;
+        background-color: #e0f2fe;
+        padding: 14px 0;
+        border-radius: 8px;
+        display: inline-block;
+        width: 80%;
+        margin: 12px auto;
+      }
+      p {
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      .footer {
+        margin-top: 32px;
+        font-size: 13px;
+        color: #6b7280;
+      }
+      .logo {
+        margin-bottom: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo" style="text-align: center; margin-bottom: 20px">
+        <span style="font-size: 32px; font-weight: bold; color: #007bff"
+          >Humadify</span
+        >
+      </div>
+
+      <h2>Verifikasi Email Anda</h2>
+      <p>
+        Gunakan kode OTP berikut untuk menyelesaikan proses verifikasi Anda:
+      </p>
+      <div class="otp-box">{{.OTP}}</div>
+      <p>
+        Kode ini berlaku selama <b>{{.TTL}} menit</b>. Mohon jangan bagikan
+        kepada siapa pun.
+      </p>
+      <div class="footer">
+        <p>Jika Anda tidak meminta kode ini, abaikan email ini.</p>
+        <p>&copy; {{.Year}} Humadify. Semua hak dilindungi.</p>
+      </div>
+    </div>
+  </body>
+</html>
