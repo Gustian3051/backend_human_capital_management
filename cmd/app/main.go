@@ -56,7 +56,7 @@ func main() {
 	)
 
 	// ===== Migration =====
-	mode := cfg.MigrationMode
+	mode := cfg.App.MigrationMode
 
 	if mode == "reset" {
 		if err := database.ResetMigrate(db); err != nil {
@@ -68,13 +68,27 @@ func main() {
 		}
 	}
 
+	// ===== Seeder =====
+	if err := database.SeedSubscription(db); err != nil {
+		logger.Log.Fatal("Failed to seed subscription", zap.Error(err))
+	}
+
+	if err := database.SeedDefaultPermissions(db); err != nil {
+		logger.Log.Fatal("Failed to seed default permissions", zap.Error(err))
+	}
+
 	// ===== Authorization =====
 	enforcer := authorization.InitCasbin(db)
 
 	jwtService := jwtinfra.NewJWTService(cfg.JWT.Secret)
 
+	firebaseAuthClient, err := firebaseApp.Auth(ctx)
+	if err != nil {
+		logger.Log.Fatal("Failed to initialize Firebase Auth", zap.Error(err))
+	}
+
 	// ===== Router =====
-	router := http.NewRouter(cfg, enforcer, db, rdb, jwtService)
+	router := http.NewRouter(cfg, enforcer, db, rdb, jwtService, firebaseAuthClient)
 
 	// ===== Run Server =====
 	addr := ":" + cfg.App.Port
