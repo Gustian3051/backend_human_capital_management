@@ -2,6 +2,12 @@ package employee
 
 import (
 	"backend/internal/domain/common"
+	"backend/internal/domain/company"
+	"backend/internal/domain/department"
+	"backend/internal/domain/position"
+	"backend/internal/domain/role_permission"
+	"backend/internal/domain/shift"
+
 	"time"
 
 	"github.com/google/uuid"
@@ -12,11 +18,21 @@ type EmployeeModel struct {
 	ID uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
 
 	UserID       uuid.UUID  `gorm:"type:uuid;index" json:"user_id,omitempty"`
+	
 	CompanyID    uuid.UUID  `gorm:"type:uuid;not null;index" json:"company_id"`
+	Company      *company.CompanyModel `gorm:"foreignKey:CompanyID;references:ID" json:"company"`
+	
 	DepartmentID *uuid.UUID `gorm:"type:uuid" json:"department_id,omitempty"`
+	Department   *department.DepartmentModel `gorm:"foreignKey:DepartmentID;references:ID" json:"department"`
+	
 	PositionID   *uuid.UUID `gorm:"type:uuid" json:"position_id,omitempty"`
+	Position     *position.PositionModel `gorm:"foreignKey:PositionID;references:ID" json:"position"`
+	
 	RoleID       uuid.UUID  `gorm:"type:uuid;index" json:"role_id,omitempty"`
+	Role         *role_permission.RoleModel `gorm:"foreignKey:RoleID;references:ID" json:"role"`
+	
 	ShiftID      *uuid.UUID `gorm:"type:uuid;index" json:"shift_id,omitempty"`
+	Shift        *shift.ShiftModel `gorm:"foreignKey:ShiftID;references:ID" json:"shift"`
 
 	// personal information
 	Picture         *string    `gorm:"size:255" json:"picture"`

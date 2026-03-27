@@ -2,6 +2,7 @@ package company
 
 import (
 	"backend/internal/domain/common"
+	"backend/internal/domain/subscription"
 
 	"github.com/google/uuid"
 )
@@ -16,7 +17,8 @@ type CompanyModel struct {
 	Picture       string  `json:"picture"`
 	CoverPicture  string  `json:"cover_picture"`
 
-	CurrentPackageID *uuid.UUID `gorm:"type:uuid" json:"current_package_id"`
+	CurrentSubscriptionID      *uuid.UUID                `gorm:"type:uuid" json:"current_subscription_id"`
+	CompanySubscriptionHistory []subscription.SubscriptionHistoryModel `gorm:"foreignKey:CompanyID;references:ID" json:"company_subscription_history"`
 
 	EmailAddress       *string `gorm:"type:varchar(100)" json:"email_address"`
 	PhoneNumberCompany *string `gorm:"type:varchar(50)" json:"phone_number_company"`

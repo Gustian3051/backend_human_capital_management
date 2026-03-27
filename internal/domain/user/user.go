@@ -19,5 +19,5 @@ type UserModel struct {
 	NeedsProfile    bool   `json:"needs_profile"`
 	common.BaseModel
 
-	employee.EmployeeModel
+	Employees []employee.EmployeeModel `gorm:"foreignKey:UserID;references:ID" json:"employees"`
 }
